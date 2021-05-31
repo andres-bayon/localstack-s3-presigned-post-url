@@ -1,0 +1,20 @@
+version: '2.1'
+
+services:
+  localstack:
+    image: localstack/localstack-full:latest
+    ports:
+      - "53:53"
+      - "443:443"
+      - "4510-4520:4510-4520"
+      - "4566-4620:4566-4620"
+    environment:
+      - SERVICES=serverless,ssm,sts,ses
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LAMBDA_REMOTE_DOCKER=true
+      - START_WEB=false
+    volumes:
+      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

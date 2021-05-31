@@ -1,0 +1,65 @@
+service: cleverscan
+
+plugins:
+  - serverless-localstack
+  - serverless-bundle
+  - serverless-offline
+
+custom:
+  provider: aws
+  localstack:
+    stages:
+      - dev
+    host: http://localhost:3000
+    edgePort: 4566
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: eu-west-1
+  environment:
+    STAGE: dev
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+      Resource: !Join
+        - ''
+        -
+          - !GetAtt Bucket.Arn
+          - /*
+
+functions:
+  documentPost:
+    handler: lambdas/document.post
+    events:
+      - http:
+          path: document
+          method: post
+resources:
+  Resources:
+    Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: example-bucket
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        LifecycleConfiguration:
+          Rules:
+            - ExpirationInDays: 30
+              Status: Enabled
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - GET
+                - POST
+              AllowedOrigins:
+                - http://node.anfix.com:8000
+                - http://local.anfix.com:8000
+                - https://prepro-profit.anfix.com
+                - https://prepro-profit2.anfix.com
+                - https://profit.anfix.com
